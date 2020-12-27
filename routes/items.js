@@ -1,15 +1,19 @@
 const express = require("express");
 const items = require("../fakeDb");
 const router = new express.Router();
+const ExpressError = require("../ExpressError");
 
-router.get("/", (req, res) => {
-    return res.json(items);
-});
+router.get("/", (req, res) => res.json(items));
 
-router.post("/", (req, res) => {
-    const newItem = { ...req.body };
-    items.push(newItem);
-    return res.json({added: newItem});
+router.post("/", (req, res, next) => {
+    try {
+        if (!req.body.name || !req.body.price) throw new ExpressError("Name and Price required.", 400);
+        const newItem = { ...req.body };
+        items.push(newItem);
+        return res.json({ added: newItem });
+    } catch(e) {
+        return next(e);
+    };
 });
 
 router.get("/:name", (req, res) => {
@@ -31,24 +35,5 @@ router.delete("/:name", (req, res) => {
         return res.json({ message: `Item: '${deletedItem.name}' deleted.` });
     };
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 module.exports = router;
